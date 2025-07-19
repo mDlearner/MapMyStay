@@ -34,7 +34,7 @@
 .policy a:hover{
     text-decoration: underline;
 }
-.card{
+.listing-card{
     border: none;
 }
 .card-img-top{
@@ -64,10 +64,7 @@ body{
 .show-img{
     height: 30vh;
 }
-form{
-    display: flex;
-  
-}
+
 .btns{
     display: flex;
 }
@@ -83,3 +80,5 @@ form{
     transform: scale(1.05);
     transition: all 0.3s ease;
 }
+
+ 

@@ -1,15 +1,71 @@
+if(process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 const methodOverride = require('method-override');
-const Listing = require('./models/listings');
 const ejsMate = require('ejs-mate');
 const path = require('path');
+const listingsRoutes = require('./routes/listings');
+const reviewRoutes = require('./routes/review');
+const userRoutes = require('./routes/user');
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
+const ExpressError = require('./utils/ExpressError');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const User = require('./models/user');
+const dbURL = process.env.ATLAS_URL;
+
+
+
+const store = MongoStore.create({
+  mongoUrl: dbURL,
+  touchAfter: 24 * 3600, // time period in seconds
+  crypto: {
+    secret: process.env.SECRET ,
+  }
+});
+
+store.on('error', function(e) {
+  console.log('Session store error', e);
+});
+
+const sessionConfig = {
+      store: store,
+      secret : process.env.SECRET,
+      resave : false,
+      saveUninitialized : true,
+     cookie : {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 ,// 1 day
+        expire : new Date(Date.now() + 1000 * 60 * 60 * 24) // 1 day
+      },
+};
+
+
+
+app.use(session(sessionConfig));
+const flash = require('connect-flash');
+app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+app.use((req, res, next) => {
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
+  res.locals.currentUser = req.user;
+  next();
+});
 
 main()
 .then(() => {
@@ -20,45 +76,15 @@ main()
 })
 .catch(err => console.log(err));
 async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/easyStay');
+  await mongoose.connect(dbURL);
 }
-// app.get('/listings', async (req, res) => {
-//    const lists = await Listing.find({});
-//     res.render('listings.ejs',{lists});
-// });
-app.get('/',async (req, res) => {
-  const lists = await Listing.find({});
-   res.render('home.ejs',{lists});
-    });
-app.get('/listings/new', (req, res) => {
-    res.render('new.ejs');
+app.use('/listings', listingsRoutes);
+app.use('/listings/:id/review', reviewRoutes);
+app.use('/user', userRoutes);
+app.all('*', (req, res, next) => {
+    next(new ExpressError(404,'Page Not Found' ));
 });
-app.get('/listings/:id/edit', async (req, res) => {
-    const { id } = req.params;
-    const list = await Listing.findById(id);
-    res.render('edit.ejs', { list });
-});
-app.get('/listings/:id', async (req, res) => {
-        const { id } = req.params;
-        const list = await Listing.findById(id);
-        res.render('show2.ejs', { list });
-});
-
-app.post('/listings', async (req, res) => {
-    const { title,image, price, location, description,contact,country } = req.body;
-    const listing = new Listing({ title, image,price, location, description ,contact,country});
-    await listing.save();
-    res.redirect('/');
-});
-app.put('/listings/:id', async (req, res) => {
-    const { id } = req.params;
-    const { title,image, price, location, description,contact,country } = req.body;
-    const list = await Listing.findByIdAndUpdate(id, { title,image, price, location, description,contact,country });
-    await list.save();
-    res.redirect(`/listings/${id}`);
-});
-app.delete('/listings/:id', async (req, res) => {
-    const { id } = req.params;
-    await Listing.findByIdAndDelete(id);
-    res.redirect('/');
+app.use((err, req, res, next) => {
+  const { status = 500, message = 'Something went wrong' } = err;
+  res.status(status).send(message);
 });

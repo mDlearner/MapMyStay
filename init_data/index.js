@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const initdata = require('./data');
+const initData = require('./data');
 const Listing = require('../models/listings');
 
 main()
@@ -12,7 +12,8 @@ async function main() {
 }
 async function seedDB() {
     await Listing.deleteMany({});
-    await Listing.insertMany(initdata.data);
+    initData.data =initData.data.map((obj) => ({ ...obj , owner : '6878c57708a9f85af3d6fd47'}));
+    await Listing.insertMany(initData.data);
 };
 seedDB()
     .then(() => {

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const { type } = require('os');
 const Schema = mongoose.Schema;
+const Review = require('./review'); // Assuming you have a Review model defined in review.js
 const listingSchema = new Schema({
     title: {
         type: String,
@@ -11,8 +11,8 @@ const listingSchema = new Schema({
         required: true
     },
     image: {
-        type: String,
-        default: "https://images.pexels.com/photos/6664684/pexels-photo-6664684.jpeg?cs=srgb&dl=pexels-constanze-marie-6664684.jpg&fm=jpg"
+       url : String,
+       filename : String,
     },
     price: {
         type: Number,
@@ -26,10 +26,30 @@ const listingSchema = new Schema({
         type: String,
         required: true
     },
-    contact:{
+    contact: {
         type: String,
         default: '+91 1234567890'
     },
+    reviews: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Review'
+        }
+    ],
+    owner : {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    }
+});
+listingSchema.post('findOneAndDelete', async function (listing) {
+    if (listing) {
+        await Review.deleteMany({
+            _id: {
+                $in: listing.reviews
+            }
+        });
+    }
 });
 const Listing = mongoose.model('Listing', listingSchema);
 module.exports = Listing;
