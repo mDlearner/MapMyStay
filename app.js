@@ -78,6 +78,9 @@ main()
 async function main() {
   await mongoose.connect(dbURL);
 }
+app.get('/', (req, res) => {
+  res.redirect('/listings');
+});
 app.use('/listings', listingsRoutes);
 app.use('/listings/:id/review', reviewRoutes);
 app.use('/user', userRoutes);
