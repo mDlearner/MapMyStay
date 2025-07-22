@@ -1,13 +1,24 @@
 <% layout('/layouts/boilerplate.ejs')%>
-<body>
-    <form action="/listings/new" method="get"><button class="btn">New Listing</button></form>
-    <ul>
-        <% for( list of lists) { %>
-            <li class="li">
-                <a href="/listings/<%= list._id %>">
-                    <%= list.title %>
-                </a>
-            </li>
-        <% } %>
-    </ul>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+<h2 class="fw-bold">All Listings</h2>
+            <form action="/listings/new" method="get">
+                <button class="btn btn-success">New Listing</button>
+            </form>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <% for( list of lists) { %>
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+<a href="/listings/<%= list._id %>" class="text-decoration-none fw-bold">
+    <%= list.title %>
+</a>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </div>
 </body>

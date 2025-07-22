@@ -1,22 +1,25 @@
 <% layout('/layouts/boilerplate.ejs')%>
 
-    <body>
-        <h1>Welcome to MapMyStay</h1>
-        <div class="row row-cols-lg-4 row-cols-md-3 row-cols-sm-1 g-4">
-            <% for( list of lists) { %>
-                <a href="/listings/<%=list._id%>" class="card-hm">
-                    <div class="card listing-card col " >
-                        <img src="<%= list.image.url%>" class="card-img-top" style="height: 20rem;" alt="img">
-                         <div class="card-img-overlay img-overlay"></div>
-                        <div class="card-body">
-                            <p class="card-text">
-                               <b> <%= list.title %></b> <br>
-                               &#8377;<%=list.price.toLocaleString("en-IN") %>/Night <br>
-                                <%= list.location %> <br>
-                            </p>
+    <body class="bg-light">
+        <div class="container py-5">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+                <% for( list of lists) { %>
+                <div class="col">
+                    <a href="/listings/<%=list._id%>" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="position-relative">
+                                <img src="<%= list.image.url%>" class="card-img-top" style="height: 16rem; object-fit:cover;" alt="img">
+                                <div class="card-img-overlay img-overlay"></div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title "><%= list.title %></h5>
+                                <p class="card-text mb-1 text-success">&#8377;<%=list.price.toLocaleString("en-IN") %>/Night</p>
+                                <p class="card-text mb-0 text-secondary"><%= list.location %></p>
+                            </div>
                         </div>
-                    </div>
-                </a>
+                    </a>
+                </div>
                 <% } %>
+            </div>
         </div>
     </body>
